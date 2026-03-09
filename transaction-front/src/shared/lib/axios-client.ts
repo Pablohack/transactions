@@ -22,7 +22,6 @@ class AxiosClient {
   }
 
   private setupInterceptors() {
-    // Request interceptor
     this.instance.interceptors.request.use(
       (config) => {
         // Puedes agregar tokens de autenticación aquí si es necesario
@@ -33,7 +32,6 @@ class AxiosClient {
       }
     );
 
-    // Response interceptor
     this.instance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
