@@ -4,8 +4,8 @@ import type {
   CreateTransactionInput,
   UpdateTransactionInput,
   TransactionListParams,
-  PaginatedResponse,
 } from '../model';
+import type { PaginatedResponse } from '@/shared/types/config.type';
 
 const BASE_PATH = '/transactions';
 

@@ -1,17 +1,14 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios';
+import type { ApiError } from '../types/config.type';
+import env from '../config/env.config';
 
-export interface ApiError {
-  message: string;
-  status?: number;
-  errors?: Record<string, string[]>;
-}
 
 class AxiosClient {
   private instance: AxiosInstance;
 
   constructor() {
     this.instance = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL,
+      baseURL: env.API_URL,
       headers: {
         'Content-Type': 'application/json',
       },

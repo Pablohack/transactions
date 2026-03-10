@@ -7,6 +7,21 @@ import type {
   CreateTransactionInput,
   UpdateTransactionInput,
 } from '../model';
+import {
+  amountFormValidator,
+  businessValidator,
+  tenpistaValidator,
+  dateFormValidator,
+} from '../model';
+
+// Helper para extraer mensaje de error
+const getErrorMessage = (error: unknown): string => {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return (error as { message: string }).message;
+  }
+  return 'Error de validación';
+};
 
 interface TransactionFormProps {
   transaction?: Transaction;
@@ -56,12 +71,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       <form.Field
         name="amount"
         validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'El monto es requerido';
-            const num = parseInt(value, 10);
-            if (isNaN(num) || num <= 0) return 'El monto debe ser mayor a 0';
-            return undefined;
-          },
+          onChange: amountFormValidator,
         }}
       >
         {(field) => (
@@ -82,7 +92,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               step="1"
             />
             {field.state.meta.errors.length > 0 && (
-              <p className="mt-1 text-sm text-error">{field.state.meta.errors[0]}</p>
+              <p className="mt-1 text-sm text-error">
+                {getErrorMessage(field.state.meta.errors[0])}
+              </p>
             )}
           </div>
         )}
@@ -92,12 +104,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       <form.Field
         name="business"
         validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'El giro o comercio es requerido';
-            if (value.length < 1 || value.length > 120)
-              return 'Debe tener entre 1 y 120 caracteres';
-            return undefined;
-          },
+          onChange: businessValidator,
         }}
       >
         {(field) => (
@@ -117,7 +124,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               maxLength={120}
             />
             {field.state.meta.errors.length > 0 && (
-              <p className="mt-1 text-sm text-error">{field.state.meta.errors[0]}</p>
+              <p className="mt-1 text-sm text-error">
+                {getErrorMessage(field.state.meta.errors[0])}
+              </p>
             )}
           </div>
         )}
@@ -127,12 +136,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       <form.Field
         name="tenpista"
         validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'El nombre del Tenpista es requerido';
-            if (value.length < 1 || value.length > 120)
-              return 'Debe tener entre 1 y 120 caracteres';
-            return undefined;
-          },
+          onChange: tenpistaValidator,
         }}
       >
         {(field) => (
@@ -152,7 +156,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               maxLength={120}
             />
             {field.state.meta.errors.length > 0 && (
-              <p className="mt-1 text-sm text-error">{field.state.meta.errors[0]}</p>
+              <p className="mt-1 text-sm text-error">
+                {getErrorMessage(field.state.meta.errors[0])}
+              </p>
             )}
           </div>
         )}
@@ -162,12 +168,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       <form.Field
         name="date"
         validators={{
-          onChange: ({ value }) => {
-            if (!value) return 'La fecha es requerida';
-            if (value > formatDateForInput(new Date())) return 'La fecha no puede ser futura';
-
-            return undefined;
-          },
+          onChange: dateFormValidator,
         }}
       >
         {(field) => (
@@ -185,7 +186,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               className={`w-full px-3 py-2 bg-surface-elevated border border-surface-border rounded text-text-primary placeholder-text-disabled focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${field.state.meta.errors.length > 0 ? 'border-error focus:ring-error' : ''}`}
             />
             {field.state.meta.errors.length > 0 && (
-              <p className="mt-1 text-sm text-error">{field.state.meta.errors[0]}</p>
+              <p className="mt-1 text-sm text-error">
+                {getErrorMessage(field.state.meta.errors[0])}
+              </p>
             )}
           </div>
         )}
