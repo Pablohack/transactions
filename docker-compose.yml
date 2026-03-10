@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: local-database
+    environment:
+      POSTGRES_DB: transactions
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d transactions"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  flyway:
+    image: flyway/flyway:10
+    container_name: flyway-migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      -url=jdbc:postgresql://postgres:5432/transactions
+      -user=admin
+      -password=admin
+      -connectRetries=10
+      migrate
+    volumes:
+      - ./transaction-db/sql:/flyway/sql
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: local-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./transaction-back
+      dockerfile: Dockerfile
+    container_name: transaction-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transactions
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./transaction-front
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080/api
+    container_name: transaction-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

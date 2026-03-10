@@ -1,8 +1,8 @@
 CREATE TABLE
     transactions (
         id SERIAL PRIMARY KEY,
-        name VARCHAR(200) NOT NULL,
-        date_transaction TIMESTAMP NOT NULL,
-        comercio VARCHAR(200) NOT NULL,
-        monto INTEGER NOT NULL
+        tenpista VARCHAR(200) NOT NULL,
+        date TIMESTAMP NOT NULL,
+        business VARCHAR(200) NOT NULL,
+        amount INTEGER NOT NULL
     );
