@@ -56,7 +56,6 @@ export const TransactionsPage: React.FC = () => {
   };
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
-
   return (
     <div className="min-h-screen bg-surface p-6">
       <div className="max-w-7xl mx-auto">
@@ -74,7 +73,7 @@ export const TransactionsPage: React.FC = () => {
         {/* Tabla */}
         <div className="bg-surface-elevated border border-surface-border rounded-lg shadow-md p-6">
           <TransactionsTable
-            data={data?.data || []}
+            data={data || []}
             isLoading={isLoading}
             isError={isError}
             error={error}

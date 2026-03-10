@@ -5,6 +5,8 @@ import type {
   CreateTransactionInput,
   UpdateTransactionInput,
   TransactionListParams,
+  Transaction,
+  PaginatedResponse,
 } from '../model';
 import { TRANSACTION_QUERY_KEYS } from '../model';
 
@@ -12,7 +14,7 @@ import { TRANSACTION_QUERY_KEYS } from '../model';
  * Hook para obtener el listado de transacciones
  */
 export const useTransactions = (params?: TransactionListParams) => {
-  return useQuery({
+  return useQuery<PaginatedResponse<Transaction>>({
     queryKey: TRANSACTION_QUERY_KEYS.list(params || {}),
     queryFn: () => transactionsApi.getAll(params),
     staleTime: 30000, // 30 segundos

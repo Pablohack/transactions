@@ -164,6 +164,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         validators={{
           onChange: ({ value }) => {
             if (!value) return 'La fecha es requerida';
+            if (value > formatDateForInput(new Date())) return 'La fecha no puede ser futura';
+
             return undefined;
           },
         }}
