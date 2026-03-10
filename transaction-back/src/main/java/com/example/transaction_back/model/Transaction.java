@@ -18,15 +18,15 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "monto", nullable = false)
-    private Integer monto;
+    @Column(name = "amount", nullable = false)
+    private Integer amount;
 
-    @Column(name = "comercio", nullable = false)
-    private String comercio;
+    @Column(name = "business", nullable = false)
+    private String business;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "tenpista", nullable = false)
+    private String tenpista;
 
-    @Column(name = "date_transaction", nullable = false)
-    private LocalDateTime date_transaction;
+    @Column(name = "date", nullable = false)
+    private LocalDateTime date;
 }

@@ -5,6 +5,7 @@ import com.example.transaction_back.service.ITransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +19,12 @@ public class TransactionController {
 
     @GetMapping
     public ResponseEntity<List<Transaction>> listarTodos() {
-        List<Transaction> transactions = transactionService.listarTodos();
-        return ResponseEntity.ok(transactions);
+        try{
+            List<Transaction> transactions = transactionService.listarTodos();
+            return ResponseEntity.ok(transactions);
+        }catch (Error error){
+            throw new Error(error);
+        }
     }
 
     @GetMapping("/{id}")
@@ -31,8 +36,12 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<Transaction> crear(@RequestBody Transaction transaction) {
-        Transaction nuevaTransaction = transactionService.crear(transaction);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaTransaction);
+        try {
+            Transaction nuevaTransaction = transactionService.crear(transaction);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaTransaction);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PutMapping("/{id}")
