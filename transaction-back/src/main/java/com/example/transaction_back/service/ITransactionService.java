@@ -1,19 +1,20 @@
 package com.example.transaction_back.service;
 
-import com.example.transaction_back.model.Transaction;
+import com.example.transaction_back.dto.CreateTransactionRequest;
+import com.example.transaction_back.dto.TransactionResponse;
+import com.example.transaction_back.dto.UpdateTransactionRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ITransactionService {
 
-    List<Transaction> listarTodos();
+    List<TransactionResponse> listarTodos();
 
-    Optional<Transaction> buscarPorId(Integer id);
+    TransactionResponse buscarPorId(Integer id);
 
-    Transaction crear(Transaction transaction);
+    TransactionResponse crear(CreateTransactionRequest request);
 
-    Transaction actualizar(Integer id, Transaction transaction);
+    TransactionResponse actualizar(Integer id, UpdateTransactionRequest request);
 
     void eliminar(Integer id);
 }

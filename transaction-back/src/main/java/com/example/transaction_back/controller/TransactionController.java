@@ -1,11 +1,13 @@
 package com.example.transaction_back.controller;
 
-import com.example.transaction_back.model.Transaction;
+import com.example.transaction_back.dto.CreateTransactionRequest;
+import com.example.transaction_back.dto.TransactionResponse;
+import com.example.transaction_back.dto.UpdateTransactionRequest;
 import com.example.transaction_back.service.ITransactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,46 +20,31 @@ public class TransactionController {
     private final ITransactionService transactionService;
 
     @GetMapping
-    public ResponseEntity<List<Transaction>> listarTodos() {
-        try{
-            List<Transaction> transactions = transactionService.listarTodos();
-            return ResponseEntity.ok(transactions);
-        }catch (Error error){
-            throw new Error(error);
-        }
+    public ResponseEntity<List<TransactionResponse>> listarTodos() {
+        return ResponseEntity.ok(transactionService.listarTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> buscarPorId(@PathVariable Integer id) {
-        return transactionService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<TransactionResponse> buscarPorId(@PathVariable Integer id) {
+        return ResponseEntity.ok(transactionService.buscarPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<Transaction> crear(@RequestBody Transaction transaction) {
-        try {
-            Transaction nuevaTransaction = transactionService.crear(transaction);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaTransaction);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public ResponseEntity<TransactionResponse> crear(@RequestBody @Valid CreateTransactionRequest request) {
+        TransactionResponse response = transactionService.crear(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Transaction> actualizar(@PathVariable Integer id, @RequestBody Transaction transaction) {
-        return transactionService.buscarPorId(id)
-                .map(t -> ResponseEntity.ok(transactionService.actualizar(id, transaction)))
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<TransactionResponse> actualizar(
+            @PathVariable Integer id,
+            @RequestBody @Valid UpdateTransactionRequest request) {
+        return ResponseEntity.ok(transactionService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        return transactionService.buscarPorId(id)
-                .map(t -> {
-                    transactionService.eliminar(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        transactionService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }
