@@ -1,6 +1,8 @@
 services:
   postgres:
-    image: postgres:16
+    build:
+      context: ./transaction-db
+      dockerfile: Dockerfile
     container_name: local-database
     environment:
       POSTGRES_DB: transactions
@@ -11,26 +13,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d transactions"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d transactions && test -f /tmp/flyway_done"]
       interval: 5s
       timeout: 5s
-      retries: 10
-      start_period: 5s
-
-  flyway:
-    image: flyway/flyway:10
-    container_name: flyway-migrations
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: >
-      -url=jdbc:postgresql://postgres:5432/transactions
-      -user=admin
-      -password=admin
-      -connectRetries=10
-      migrate
-    volumes:
-      - ./transaction-db/sql:/flyway/sql
+      retries: 15
+      start_period: 10s
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -56,8 +43,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      flyway:
-        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:

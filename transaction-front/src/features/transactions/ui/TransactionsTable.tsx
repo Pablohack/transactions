@@ -32,7 +32,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   onRefetch,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
-
+  console.log('TransactionsTable render - data:', data);
   const columns: ColumnDef<Transaction>[] = [
     {
       accessorKey: 'id',

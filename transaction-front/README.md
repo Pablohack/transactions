@@ -217,17 +217,135 @@ const transactionSchema = z.object({
 
 ### Estrategia de Testing
 
-Se implementan tests mínimos pero efectivos:
+Se implementan tests unitarios por capa siguiendo el patrón **Arrange-Act-Assert**:
 
-1. **Componentes UI**: Tests de render y comportamiento (`Button.test.tsx`)
-2. **Utilidades**: Tests de helpers de formato (`format.test.ts`)
-3. **Formularios**: Validación con TanStack Form + Zod
+| Archivo | Capa | Qué testea |
+|---------|------|-------------|
+| `TransactionForm.test.tsx` | UI (feature) | Renderizado, validación Zod campo por campo, creación/edición, estados disabled |
+| `TransactionsTable.test.tsx` | UI (feature) | Estados loading/error/empty, renderizado de datos, acciones editar/eliminar, paginación, sorting |
+| `useTransactions.test.tsx` | Hooks (feature) | CRUD con React Query, invalidación de cache, manejo de errores, reintentos |
+| `useTransactionActions.test.tsx` | Hooks (page) | Flujos completos crear/editar/eliminar, gestión de modales, estado del formulario |
+| `Button.test.tsx` | UI (shared) | Variantes, tamaños, estado loading, props HTML nativas |
+| `format.test.ts` | Lib (shared) | `formatCurrency`, `formatDate`, `formatDateForInput`, `toISOString`, `parseCurrency` |
+
+### Estructura de tests
+
+```
+src/
+├── features/transactions/
+│   ├── hooks/useTransactions.test.tsx     # Hooks React Query (CRUD)
+│   └── ui/
+│       ├── TransactionForm.test.tsx       # Formulario + validación
+│       └── TransactionsTable.test.tsx     # Tabla + paginación + sorting
+├── pages/hooks/
+│   └── useTransactionActions.test.tsx     # Flujos de página
+├── shared/
+│   ├── lib/format.test.ts                # Utilidades de formato
+│   └── ui/Button.test.tsx                # Componente atómico
+└── test/
+    ├── setup.ts                          # Configuración global (jest-dom, cleanup)
+    └── mocks/styleMock.ts                # Mock de CSS imports
+```
+
+### Configuración
+
+- **Runner**: [Vitest](https://vitest.dev/) con entorno `happy-dom`
+- **Assertions**: `@testing-library/jest-dom` para matchers de DOM
+- **Render**: `@testing-library/react` + `@testing-library/user-event`
+- **Cobertura**: Provider `v8`, reporters `text`, `json`, `html`
 
 ### Ejecutar Tests
 
 ```bash
-npm test              # Watch mode
-npm run test:coverage # Con reporte de cobertura
+# Watch mode (desarrollo)
+npm test
+
+# Ejecución única (CI)
+npm run test -- --run
+
+# Con reporte de cobertura
+npm run test:coverage
+
+# Con UI interactiva de Vitest
+npm run test:ui
+
+# Archivo específico
+npm run test TransactionForm.test.tsx
+```
+
+## 🧩 Patrones de Diseño
+
+| Patrón | Ubicación | Descripción |
+|--------|-----------|-------------|
+| **Feature Model** | `src/features/` | Cada feature agrupa api, model, hooks y ui de forma autocontenida |
+| **Custom Hooks** | `useTransactions`, `useTransactionActions` | Encapsulan lógica de negocio y estado, separándola de la UI |
+| **Container / Presentational** | `TransactionsPage` / `TransactionsTable`, `TransactionForm` | Pages orquestan estado y lógica; componentes UI solo reciben props |
+| **Barrel Exports** | `index.ts` en cada carpeta | Re-exportan módulos para imports limpios (`@/features/transactions`) |
+| **Provider Pattern** | `QueryProvider` | Envuelve la app para inyectar dependencias (QueryClient) |
+| **Error Boundary** | `ErrorBoundary` (class component) | Captura errores de renderizado y muestra fallback |
+| **Singleton** | `AxiosClient` | Instancia única de Axios con interceptores centralizados |
+| **Adapter** | `axiosClient` interceptores | Normaliza errores HTTP a un tipo `ApiError` consistente |
+| **Schema Validation** | `types.ts` con Zod | Schemas reutilizables para validar datos en formularios y API |
+| **Lazy Loading** | `AppRoutes.tsx` | `React.lazy()` + `Suspense` para code-splitting por ruta |
+| **Compound Components** | `Modal` con `footer` slot | Componente compuesto que acepta contenido y footer como props |
+| **Headless UI** | TanStack Table / Form | Lógica sin opinión visual, renderizado controlado por el consumidor |
+
+## 🐳 Docker — Ejecución Individual
+
+El proyecto incluye un **Dockerfile multi-stage** para construir y servir la aplicación de forma independiente.
+
+### Estructura del Dockerfile
+
+```dockerfile
+# Etapa 1: Build con Node 20
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY . .
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN npm run build
+
+# Etapa 2: Servir con Nginx
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Construir la imagen
+
+```bash
+docker build \
+  --build-arg VITE_API_BASE_URL=http://localhost:8080/api \
+  -t transaction-front .
+```
+
+> `VITE_API_BASE_URL` se inyecta en **build time** porque Vite reemplaza las variables de entorno durante la compilación.
+
+### Ejecutar el contenedor
+
+```bash
+docker run -d -p 3000:80 --name transaction-front transaction-front
+```
+
+La aplicación estará disponible en **http://localhost:3000**.
+
+### Nginx
+
+El archivo `nginx.conf` configura un servidor SPA que redirige todas las rutas a `index.html`:
+
+```nginx
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
 ```
 
 ## 📝 Decisiones de Arquitectura

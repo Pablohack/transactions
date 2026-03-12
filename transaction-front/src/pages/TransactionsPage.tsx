@@ -23,7 +23,7 @@ export const TransactionsPage: React.FC = () => {
     handleCancelDelete,
     handleCloseFormModal,
   } = useTransactionActions();
-
+ console.log('TransactionsPage render - data:', data, 'isLoading:', isLoading, 'isError:', isError, 'error:', error);
   return (
     <div className="min-h-screen bg-surface p-6">
       <div className="max-w-7xl mx-auto">
