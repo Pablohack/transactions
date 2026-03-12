@@ -53,13 +53,7 @@ describe('useTransactions Hook', () => {
     ];
 
     it('debe obtener el listado de transacciones exitosamente', async () => {
-      vi.mocked(transactionsApi.transactionsApi.getAll).mockResolvedValue({
-        data: mockTransactions,
-        total: mockTransactions.length,
-        page: 1,
-        pageSize: 10,
-        totalPages: 1,
-      });
+      vi.mocked(transactionsApi.transactionsApi.getAll).mockResolvedValue(mockTransactions);
 
       const { result } = renderHook(() => useTransactions(), {
         wrapper: createWrapper(),
@@ -71,7 +65,7 @@ describe('useTransactions Hook', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(result.current.data?.data).toEqual(mockTransactions);
+      expect(result.current.data).toEqual(mockTransactions);
       expect(result.current.error).toBeNull();
     });
 

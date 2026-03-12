@@ -9,7 +9,7 @@ import { useTransactionActions } from './hooks';
 
 export const TransactionsPage: React.FC = () => {
   const { data, isLoading, isError, error, refetch } = useTransactions();
-  
+  console.log('TransactionsPage - data:', data, 'isLoading:', isLoading, 'isError:', isError, 'error:', error);
   const {
     isFormModalOpen,
     selectedTransaction,
@@ -32,7 +32,7 @@ export const TransactionsPage: React.FC = () => {
 
         <div className="bg-surface-elevated border border-surface-border rounded-lg shadow-md p-6">
           <TransactionsTable
-            data={data?.data || []}
+            data={(data) || []}
             isLoading={isLoading}
             isError={isError}
             error={error}

@@ -5,7 +5,6 @@ import type {
   UpdateTransactionInput,
   TransactionListParams,
 } from '../model';
-import type { PaginatedResponse } from '@/shared/types/config.type';
 
 const BASE_PATH = '/transactions';
 
@@ -13,8 +12,8 @@ export const transactionsApi = {
   /**
    * Obtiene el listado de transacciones con filtros y paginación
    */
-  getAll: async (params?: TransactionListParams): Promise<PaginatedResponse<Transaction>> => {
-    const response = await axiosClient.get<PaginatedResponse<Transaction>>(BASE_PATH, { params });
+  getAll: async (params?: TransactionListParams): Promise<Transaction[]> => {
+    const response = await axiosClient.get<Transaction[]>(BASE_PATH, { params });
     return response.data;
   },
 
