@@ -104,7 +104,6 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
       ),
     },
   ];
-console.log('data table',data)
   const table = useReactTable({
     data,
     columns,

@@ -9,7 +9,6 @@ import { useTransactionActions } from './hooks';
 
 export const TransactionsPage: React.FC = () => {
   const { data, isLoading, isError, error, refetch } = useTransactions();
-  console.log('TransactionsPage - data:', data, 'isLoading:', isLoading, 'isError:', isError, 'error:', error);
   const {
     isFormModalOpen,
     selectedTransaction,
