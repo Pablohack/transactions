@@ -27,6 +27,6 @@ public class CreateTransactionRequest {
     private String tenpista;
 
     @NotNull(message = "La fecha es requerida")
-    @Past(message = "La fecha de transacción no puede ser futura a la fecha y hora actual")
+//    @Past(message = "La fecha de transacción no puede ser futura a la fecha y hora actual")
     private LocalDateTime date;
 }

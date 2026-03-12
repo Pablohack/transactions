@@ -26,7 +26,7 @@ export const FormField: React.FC<FormFieldProps> = ({ field, disabled, ...inputP
       onChange={(e) => field.handleChange(e.target.value)}
       onBlur={field.handleBlur}
       error={errorMessage}
-      disabled={disabled || field.form.state.isSubmitting}
+      disabled={disabled}
     />
   );
 };
