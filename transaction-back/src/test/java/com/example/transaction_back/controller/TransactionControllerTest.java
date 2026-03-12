@@ -7,6 +7,8 @@ import com.example.transaction_back.dto.UpdateTransactionRequest;
 import com.example.transaction_back.exception.ResourceNotFoundException;
 import com.example.transaction_back.service.ITransactionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,9 +18,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,7 +39,9 @@ class TransactionControllerTest {
 
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Mock
     private ITransactionService transactionService;
@@ -48,16 +55,17 @@ class TransactionControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(transactionController)
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
                 .build();
     }
 
     private TransactionResponse buildResponse() {
         return TransactionResponse.builder()
-                .id(1)
-                .amount(50000)
+                .id(1L)
+                .amount(new BigDecimal("50000"))
                 .business("Supermercado")
                 .tenpista("Juan Pérez")
-                .date("2026-03-09T14:30:00")
+                .date(LocalDateTime.of(2026, 3, 9, 14, 30))
                 .build();
     }
 
@@ -78,7 +86,7 @@ class TransactionControllerTest {
                     .andExpect(jsonPath("$[0].business").value("Supermercado"))
                     .andExpect(jsonPath("$[0].tenpista").value("Juan Pérez"));
 
-            verify(transactionService, times(1)).listarTodos();
+            verify(transactionService).listarTodos();
         }
 
         @Test
@@ -99,7 +107,7 @@ class TransactionControllerTest {
         @Test
         @DisplayName("debe retornar 200 cuando la transacción existe")
         void shouldReturnTransaction() throws Exception {
-            when(transactionService.buscarPorId(1)).thenReturn(buildResponse());
+            when(transactionService.buscarPorId(1L)).thenReturn(buildResponse());
 
             mockMvc.perform(get(BASE_URL + "/1"))
                     .andExpect(status().isOk())
@@ -111,8 +119,8 @@ class TransactionControllerTest {
         @Test
         @DisplayName("debe retornar 404 cuando la transacción no existe")
         void shouldReturn404WhenNotFound() throws Exception {
-            when(transactionService.buscarPorId(99))
-                    .thenThrow(new ResourceNotFoundException("Transacción", 99));
+            when(transactionService.buscarPorId(99L))
+                    .thenThrow(new ResourceNotFoundException("Transacción", 99L));
 
             mockMvc.perform(get(BASE_URL + "/99"))
                     .andExpect(status().isNotFound())
@@ -129,10 +137,10 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 201 al crear con datos válidos")
         void shouldCreateTransaction() throws Exception {
             CreateTransactionRequest request = new CreateTransactionRequest();
-            request.setAmount(50000);
+            request.setAmount(new BigDecimal("50000"));
             request.setBusiness("Supermercado");
             request.setTenpista("Juan Pérez");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             when(transactionService.crear(any(CreateTransactionRequest.class)))
                     .thenReturn(buildResponse());
@@ -144,7 +152,7 @@ class TransactionControllerTest {
                     .andExpect(jsonPath("$.id").value(1))
                     .andExpect(jsonPath("$.amount").value(50000));
 
-            verify(transactionService, times(1)).crear(any(CreateTransactionRequest.class));
+            verify(transactionService).crear(any(CreateTransactionRequest.class));
         }
 
         @Test
@@ -153,7 +161,7 @@ class TransactionControllerTest {
             CreateTransactionRequest request = new CreateTransactionRequest();
             request.setBusiness("Supermercado");
             request.setTenpista("Juan Pérez");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -170,10 +178,10 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 400 cuando el monto es negativo")
         void shouldReturn400WhenAmountIsNegative() throws Exception {
             CreateTransactionRequest request = new CreateTransactionRequest();
-            request.setAmount(-100);
+            request.setAmount(new BigDecimal("-100"));
             request.setBusiness("Supermercado");
             request.setTenpista("Juan Pérez");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -188,10 +196,10 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 400 cuando el business está vacío")
         void shouldReturn400WhenBusinessIsBlank() throws Exception {
             CreateTransactionRequest request = new CreateTransactionRequest();
-            request.setAmount(50000);
+            request.setAmount(new BigDecimal("50000"));
             request.setBusiness("");
             request.setTenpista("Juan Pérez");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -206,10 +214,10 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 400 cuando el tenpista está vacío")
         void shouldReturn400WhenTenpistaIsBlank() throws Exception {
             CreateTransactionRequest request = new CreateTransactionRequest();
-            request.setAmount(50000);
+            request.setAmount(new BigDecimal("50000"));
             request.setBusiness("Supermercado");
             request.setTenpista("");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -236,10 +244,10 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 400 cuando business excede 120 caracteres")
         void shouldReturn400WhenBusinessTooLong() throws Exception {
             CreateTransactionRequest request = new CreateTransactionRequest();
-            request.setAmount(50000);
+            request.setAmount(new BigDecimal("50000"));
             request.setBusiness("a".repeat(121));
             request.setTenpista("Juan Pérez");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             mockMvc.perform(post(BASE_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -259,20 +267,20 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 200 al actualizar con datos válidos")
         void shouldUpdateTransaction() throws Exception {
             UpdateTransactionRequest request = new UpdateTransactionRequest();
-            request.setAmount(35000);
+            request.setAmount(new BigDecimal("35000"));
             request.setBusiness("Supermercado Updated");
             request.setTenpista("Juan Pérez");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             TransactionResponse updatedResponse = TransactionResponse.builder()
-                    .id(1)
-                    .amount(35000)
+                    .id(1L)
+                    .amount(new BigDecimal("35000"))
                     .business("Supermercado Updated")
                     .tenpista("Juan Pérez")
-                    .date("2026-03-09T14:30:00")
+                    .date(LocalDateTime.of(2026, 3, 9, 14, 30))
                     .build();
 
-            when(transactionService.actualizar(eq(1), any(UpdateTransactionRequest.class)))
+            when(transactionService.actualizar(eq(1L), any(UpdateTransactionRequest.class)))
                     .thenReturn(updatedResponse);
 
             mockMvc.perform(put(BASE_URL + "/1")
@@ -283,20 +291,20 @@ class TransactionControllerTest {
                     .andExpect(jsonPath("$.amount").value(35000))
                     .andExpect(jsonPath("$.business").value("Supermercado Updated"));
 
-            verify(transactionService, times(1)).actualizar(eq(1), any(UpdateTransactionRequest.class));
+            verify(transactionService).actualizar(eq(1L), any(UpdateTransactionRequest.class));
         }
 
         @Test
         @DisplayName("debe retornar 404 cuando la transacción no existe")
         void shouldReturn404WhenNotFound() throws Exception {
             UpdateTransactionRequest request = new UpdateTransactionRequest();
-            request.setAmount(35000);
+            request.setAmount(new BigDecimal("35000"));
             request.setBusiness("Test");
             request.setTenpista("Test");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
-            when(transactionService.actualizar(eq(99), any(UpdateTransactionRequest.class)))
-                    .thenThrow(new ResourceNotFoundException("Transacción", 99));
+            when(transactionService.actualizar(eq(99L), any(UpdateTransactionRequest.class)))
+                    .thenThrow(new ResourceNotFoundException("Transacción", 99L));
 
             mockMvc.perform(put(BASE_URL + "/99")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -309,10 +317,10 @@ class TransactionControllerTest {
         @DisplayName("debe retornar 400 con datos inválidos")
         void shouldReturn400WithInvalidData() throws Exception {
             UpdateTransactionRequest request = new UpdateTransactionRequest();
-            request.setAmount(-100);
+            request.setAmount(new BigDecimal("-100"));
             request.setBusiness("");
             request.setTenpista("");
-            request.setDate("2026-03-09T14:30:00");
+            request.setDate(LocalDateTime.of(2026, 3, 9, 14, 30));
 
             mockMvc.perform(put(BASE_URL + "/1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -320,7 +328,7 @@ class TransactionControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", hasSize(greaterThanOrEqualTo(2))));
 
-            verify(transactionService, never()).actualizar(anyInt(), any());
+            verify(transactionService, never()).actualizar(anyLong(), any());
         }
     }
 
@@ -331,19 +339,19 @@ class TransactionControllerTest {
         @Test
         @DisplayName("debe retornar 204 al eliminar correctamente")
         void shouldDeleteTransaction() throws Exception {
-            doNothing().when(transactionService).eliminar(1);
+            doNothing().when(transactionService).eliminar(1L);
 
             mockMvc.perform(delete(BASE_URL + "/1"))
                     .andExpect(status().isNoContent());
 
-            verify(transactionService, times(1)).eliminar(1);
+            verify(transactionService).eliminar(1L);
         }
 
         @Test
         @DisplayName("debe retornar 404 cuando la transacción no existe")
         void shouldReturn404WhenNotFound() throws Exception {
-            doThrow(new ResourceNotFoundException("Transacción", 99))
-                    .when(transactionService).eliminar(99);
+            doThrow(new ResourceNotFoundException("Transacción", 99L))
+                    .when(transactionService).eliminar(99L);
 
             mockMvc.perform(delete(BASE_URL + "/99"))
                     .andExpect(status().isNotFound())

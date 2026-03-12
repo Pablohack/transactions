@@ -23,48 +23,21 @@ public class TransactionMapper {
 
     private final ModelMapper modelMapper;
 
-    /**
-     * Convierte una entidad Transaction a TransactionResponse DTO.
-     *
-     * @param transaction La entidad a convertir
-     * @return El DTO de respuesta
-     */
     public TransactionResponse toResponse(Transaction transaction) {
         log.debug("Mapeando Transaction a TransactionResponse - ID: {}", transaction.getId());
         return modelMapper.map(transaction, TransactionResponse.class);
     }
-
-    /**
-     * Convierte una lista de entidades Transaction a una lista de TransactionResponse DTOs.
-     *
-     * @param transactions La lista de entidades a convertir
-     * @return La lista de DTOs de respuesta
-     */
     public List<TransactionResponse> toResponseList(List<Transaction> transactions) {
         log.debug("Mapeando {} transacciones a TransactionResponse", transactions.size());
         return transactions.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
-
-    /**
-     * Convierte un CreateTransactionRequest DTO a una entidad Transaction.
-     *
-     * @param request El DTO de creación
-     * @return La entidad Transaction
-     */
     public Transaction toEntity(CreateTransactionRequest request) {
         log.debug("Mapeando CreateTransactionRequest a Transaction");
         return modelMapper.map(request, Transaction.class);
     }
 
-    /**
-     * Actualiza una entidad Transaction existente con los datos de UpdateTransactionRequest.
-     * Preserva los campos de auditoría y el ID.
-     *
-     * @param request El DTO con los datos a actualizar
-     * @param existingTransaction La entidad existente a actualizar
-     */
     public void updateEntity(UpdateTransactionRequest request, Transaction existingTransaction) {
         log.debug("Actualizando Transaction ID: {} con datos de UpdateTransactionRequest", 
                   existingTransaction.getId());
