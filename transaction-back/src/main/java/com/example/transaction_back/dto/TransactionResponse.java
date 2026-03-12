@@ -1,19 +1,22 @@
 package com.example.transaction_back.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@Builder
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class TransactionResponse {
 
-    private Integer id;
-    private Integer amount;
+    private Long id;
+    private BigDecimal amount;
     private String business;
     private String tenpista;
-    private String date;
+    private LocalDateTime date;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

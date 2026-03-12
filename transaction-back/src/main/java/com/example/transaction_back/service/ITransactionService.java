@@ -10,11 +10,11 @@ public interface ITransactionService {
 
     List<TransactionResponse> listarTodos();
 
-    TransactionResponse buscarPorId(Integer id);
+    TransactionResponse buscarPorId(Long id);
 
     TransactionResponse crear(CreateTransactionRequest request);
 
-    TransactionResponse actualizar(Integer id, UpdateTransactionRequest request);
+    TransactionResponse actualizar(Long id, UpdateTransactionRequest request);
 
-    void eliminar(Integer id);
+    void eliminar(Long id);
 }

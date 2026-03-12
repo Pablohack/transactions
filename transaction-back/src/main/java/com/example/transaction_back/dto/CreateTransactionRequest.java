@@ -1,23 +1,22 @@
 package com.example.transaction_back.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
-@Data
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CreateTransactionRequest {
 
     @NotNull(message = "El monto es requerido")
     @Positive(message = "El monto debe ser mayor a 0")
-    @Max(value = 2147483647, message = "El monto excede el máximo permitido")
-    private Integer amount;
+    @DecimalMax(value = "999999999999.99", message = "El monto excede el máximo permitido")
+    private BigDecimal amount;
 
     @NotBlank(message = "El giro o comercio es requerido")
     @Size(max = 120, message = "El giro o comercio no puede exceder 120 caracteres")
@@ -28,5 +27,6 @@ public class CreateTransactionRequest {
     private String tenpista;
 
     @NotNull(message = "La fecha es requerida")
-    private String date;
+    @Past(message = "La fecha de transacción no puede ser futura a la fecha y hora actual")
+    private LocalDateTime date;
 }
